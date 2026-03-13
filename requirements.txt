@@ -1,0 +1,10 @@
+streamlit
+langchain
+langchain-community
+langchain-classic
+langchain-core
+langchain-huggingface
+langchain-groq
+langchain-pinecone
+pinecone-client
+sentence-transformers
