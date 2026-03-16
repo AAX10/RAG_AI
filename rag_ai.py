@@ -9,7 +9,6 @@ from langchain_classic.chains.combine_documents import create_stuff_documents_ch
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
 
-# --- 1. CONFIGURATION ---
 st.set_page_config(page_title="Axiom AI - Academic Tutor", page_icon="📚")
 st.markdown("### Ask away. Get precise answers straight from the source text.")
 
@@ -20,27 +19,21 @@ with st.sidebar:
         st.rerun()
     st.divider()
 
-# --- 2. LEAN CLOUD PIPELINE ---
 @st.cache_resource
 def setup_rag_pipeline():
-    # Load API keys securely from Streamlit
     os.environ["PINECONE_API_KEY"] = st.secrets["PINECONE_API_KEY"]
     groq_api_key = st.secrets["GROQ_API_KEY"]
 
-    # 1. Connect to Pinecone (Cloud Database)
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     vector_store = PineconeVectorStore.from_existing_index(
         index_name="rag-ai", 
         embedding=embeddings
     )
 
-    # 2. Connect to Groq (Cloud LLM)
     llm = ChatGroq(model_name="llama-3.1-8b-instant", temperature=0.0, groq_api_key=groq_api_key)
     
-    # 3. Direct Pinecone Search (Retrieving top 3 sources to keep it fast)
     retriever = vector_store.as_retriever(search_kwargs={"k": 3})
 
-    # 4. History Prompt
     contextualize_q_prompt = ChatPromptTemplate.from_messages([
         ("system", "Given a chat history and the latest user question... formulate a standalone question. Do NOT answer the question."),
         MessagesPlaceholder("chat_history"),
@@ -48,7 +41,6 @@ def setup_rag_pipeline():
     ])
     history_aware_retriever = create_history_aware_retriever(llm, retriever, contextualize_q_prompt)
 
-    # 5. Answering Prompt
     qa_prompt = ChatPromptTemplate.from_messages([
         ("system", "You are a brilliant, highly rigorous Computer Science Professor. You have been provided with excerpts from authoritative textbooks.\n\n<context>\n{context}\n</context>\n\nINSTRUCTIONS:\n1. Silently analyze the context.\n2. Write a comprehensive answer. Use direct quotes where appropriate.\nIf the answer is missing, do not guess."),
         MessagesPlaceholder("chat_history"),
@@ -62,7 +54,6 @@ def setup_rag_pipeline():
 
 qa_chain, llm = setup_rag_pipeline()
 
-# --- 3. STREAMLIT CHAT UI ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -70,7 +61,7 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if prompt := st.chat_input("Ask a question about your CS textbooks..."):
+if prompt := st.chat_input("Ask a question about your course"):
     st.chat_message("user").markdown(prompt)
     
     chat_history = []
@@ -95,7 +86,6 @@ if prompt := st.chat_input("Ask a question about your CS textbooks..."):
             
             st.markdown(answer)
             
-            # Source Viewer with AI Cleanup
             with st.expander("View Sources"):
                 for i, doc in enumerate(sources):
                     source_file = os.path.basename(doc.metadata.get('source', 'Unknown Book'))
