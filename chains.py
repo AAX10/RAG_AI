@@ -11,7 +11,7 @@ from langchain_core.documents import Document
 from langchain_core.messages import BaseMessage
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_groq import ChatGroq
-from langchain_community.chat_models import ChatOllama
+from langchain_ollama import ChatOllama
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from langchain_classic.chains import create_history_aware_retriever

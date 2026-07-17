@@ -14,3 +14,4 @@ PyMuPDF
 python-dotenv
 numpy
 langchain-community
+langchain-ollama
