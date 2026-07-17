@@ -13,3 +13,4 @@ torchvision==0.21.0
 PyMuPDF
 python-dotenv
 numpy
+langchain-community
