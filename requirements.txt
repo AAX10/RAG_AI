@@ -1,0 +1,15 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+streamlit
+langchain-core
+langchain-classic
+langchain-pinecone
+langchain-groq
+langchain-huggingface
+langchain-text-splitters
+sentence-transformers
+torch==2.6.0
+torchvision==0.21.0
+PyMuPDF
+python-dotenv
+numpy
