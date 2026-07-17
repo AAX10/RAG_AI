@@ -323,10 +323,12 @@ def _render_citations(
     if isinstance(citations, list) and citations:
         with st.expander(f" Sources ({len(citations)})", expanded=False):
             for citation in citations:
-                if isinstance(citation, SourceCitation):
-                    _render_single_citation(citation)
-                elif isinstance(citation, dict):
+                if isinstance(citation, dict):
                     _render_single_citation_dict(citation)
+                elif hasattr(citation, "full_ref"):
+                    _render_single_citation(citation)
+                else:
+                    st.write("Error: Unknown citation format")
 
 
 def _render_single_citation(citation: SourceCitation) -> None:
