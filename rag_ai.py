@@ -114,39 +114,51 @@ if prompt:
     with st.chat_message("assistant"):
         with st.spinner(" Searching textbooks and thinking..."):
 
-            # Invoke the full RAG pipeline
-            result = pipeline.invoke(
-                query=prompt,
-                chat_history=chat_history,
-                mode=sidebar_config["mode"],
-            )
+            try:
+                # Invoke the full RAG pipeline
+                result = pipeline.invoke(
+                    query=prompt,
+                    chat_history=chat_history,
+                    mode=sidebar_config["mode"],
+                )
 
-            answer = result["answer"]
-            citations = result["citations"]
-            stats = result["stats"]
-            mode_used = result["mode"]
-            keywords = result["keywords"]
+                answer = result["answer"]
+                citations = result["citations"]
+                stats = result["stats"]
+                mode_used = result["mode"]
+                keywords = result["keywords"]
 
-            # Render the response with citations and stats
-            mode_label = format_mode_indicator(mode_used)
-            render_response(answer, citations, stats, mode_used, mode_label)
+                # Render the response with citations and stats
+                mode_label = format_mode_indicator(mode_used)
+                render_response(answer, citations, stats, mode_used, mode_label)
 
-    # --- Save assistant message with metadata ---
-    citation_dicts = format_citation_details(citations)
-    ChatMemory.add_message(
-        st.session_state,
-        "assistant",
-        answer,
-        metadata={
-            "mode": mode_used,
-            "mode_label": mode_label,
-            "citations": citation_dicts,
-            "stats": stats,
-        },
-    )
+                # --- Save assistant message with metadata ---
+                citation_dicts = format_citation_details(citations)
+                ChatMemory.add_message(
+                    st.session_state,
+                    "assistant",
+                    answer,
+                    metadata={
+                        "mode": mode_used,
+                        "mode_label": mode_label,
+                        "citations": citation_dicts,
+                        "stats": stats,
+                    },
+                )
 
-    # --- Update performance stats for sidebar ---
-    st.session_state.performance_stats = stats
+                # --- Update performance stats for sidebar ---
+                st.session_state.performance_stats = stats
+
+            except Exception as e:
+                error_msg = str(e)
+                if "RateLimitError" in error_msg or "429" in error_msg:
+                    st.error("⏳ Rate limit reached! Groq's free tier only allows a few queries per minute. Please wait 60 seconds and try again.")
+                else:
+                    st.error(f"❌ An error occurred: {error_msg}")
+                
+                # Remove the user message from history since the assistant failed
+                if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
+                    st.session_state.messages.pop()
 
     # --- Update learning state ---
     learning_state = st.session_state.learning_state
